@@ -3,285 +3,423 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title th:text="'For ' + ${herName} + ' 💖 | A Special Story'">A Romantic Story For You</title>
-    
+    <title th:text="'For ' + ${herName} + ' 💖 | Our Story'">A Romantic Story For You</title>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,400;1,600&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Three.js for true 3D Petal Physics -->
+
+    <!-- Three.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- GSAP for premium animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <!-- Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
-    
-    <!-- Stylesheet -->
+
     <link rel="stylesheet" th:href="@{/css/style.css}" href="/css/style.css">
 </head>
 <body>
 
-    <!-- 3D WebGL Canvas for Realistic Falling Rose & Sakura Petals -->
-    <div id="webgl-container"></div>
-    
-    <!-- Ambient Romantic Lighting & Bokeh Overlays -->
-    <div class="ambient-glow glow-1"></div>
-    <div class="ambient-glow glow-2"></div>
-    <div class="ambient-glow glow-3"></div>
-    <div class="vignette-overlay"></div>
+<!-- ═══════════════════════════════════════════════════════════
+     GALAXY + 3D ENGINE CANVAS
+     ═══════════════════════════════════════════════════════════ -->
+<canvas id="galaxy-canvas"></canvas>
 
-    <!-- Floating Audio Player Control -->
-    <div class="music-toggle-container" id="musicToggle" title="Toggle Romantic Melody">
-        <div class="music-disc">
-            <i class="fa-solid fa-music"></i>
+<!-- Magnetic Cursor -->
+<div id="cursor-dot"></div>
+<div id="cursor-ring"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOADING SCREEN
+     ═══════════════════════════════════════════════════════════ -->
+<div id="loading-screen">
+    <div class="loader-heart">
+        <div class="loader-pulse">💖</div>
+        <div class="loader-text">Preparing something magical...</div>
+        <div class="loader-bar-track"><div class="loader-bar-fill" id="loaderFill"></div></div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MUSIC PLAYER
+     ═══════════════════════════════════════════════════════════ -->
+<div class="music-player" id="musicToggle">
+    <div class="music-disc-wrap">
+        <div class="music-disc"><i class="fa-solid fa-music"></i></div>
+        <svg class="disc-ring" viewBox="0 0 44 44">
+            <circle cx="22" cy="22" r="20" fill="none" stroke="rgba(255,115,141,0.5)" stroke-width="2" stroke-dasharray="125.6" stroke-dashoffset="125.6" id="musicProgress"/>
+        </svg>
+    </div>
+    <div class="eq-bars">
+        <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <span class="music-label">Our Melody</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO SECTION — FULL SCREEN INTRO
+     ═══════════════════════════════════════════════════════════ -->
+<section class="hero-section" id="heroSection">
+    <div class="hero-content">
+        <div class="hero-badge" id="heroBadge">
+            <i class="fa-solid fa-heart-pulse"></i>
+            <span th:text="'A Story Written For ' + ${herName}">A Story Written For You</span>
         </div>
-        <div class="equalizer-waves">
-            <span></span><span></span><span></span><span></span>
+
+        <h1 class="hero-title">
+            <span class="hero-line-1" id="heroLine1">Every heartbeat,</span>
+            <span class="hero-line-2" id="heroLine2">every breath,</span>
+            <span class="hero-line-3" id="heroLine3">
+                <span class="typed-text" id="typedText"></span><span class="cursor-blink">|</span>
+            </span>
+        </h1>
+
+        <p class="hero-subtitle" id="heroSubtitle">
+            Scroll down to begin our story...
+        </p>
+
+        <div class="hero-scroll-cta" id="heroScrollCta">
+            <div class="scroll-arrow-wrap">
+                <i class="fa-solid fa-chevron-down scroll-arrow"></i>
+            </div>
+            <span>Begin the Journey</span>
         </div>
-        <span class="music-label">Our Song</span>
     </div>
 
-    <!-- Main Container -->
-    <main class="proposal-universe">
-        
-        <!-- Top Romantic Header & Progress Ticker -->
-        <header class="story-header">
-            <div class="love-badge">
-                <i class="fa-solid fa-heart pulse-heart"></i>
-                <span th:text="'A Story Dedicated to ' + ${herName}">A Story Dedicated to My Love</span>
-            </div>
-            
-            <!-- Step Progress Indicators -->
-            <div class="progress-bar-wrapper">
-                <div class="progress-track">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="progress-steps">
-                    <div class="step-indicator active" data-step="1">
-                        <span class="dot"></span>
-                        <span class="step-name">Prologue</span>
-                    </div>
-                    <div class="step-indicator" data-step="2">
-                        <span class="dot"></span>
-                        <span class="step-name">Radiance</span>
-                    </div>
-                    <div class="step-indicator" data-step="3">
-                        <span class="dot"></span>
-                        <span class="step-name">Memories</span>
-                    </div>
-                    <div class="step-indicator" data-step="4">
-                        <span class="dot"></span>
-                        <span class="step-name">Forever</span>
-                    </div>
-                </div>
-            </div>
-        </header>
+    <!-- 3D Ring WebGL Scene -->
+    <div id="ring-3d-scene"></div>
 
-        <!-- Interactive Story Cards Container -->
-        <section class="cards-stage" id="cardsStage">
+    <!-- Floating ambient orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+</section>
 
-            <!-- Card 1: Where it all began -->
-            <div class="story-card active" id="card-1" data-step="1">
-                <div class="card-glass-panel">
-                    <div class="chapter-tag">
-                        <i class="fa-regular fa-compass"></i> Chapter I &bull; <span th:text="${chapters[0].tag}">Where our story began...</span>
-                    </div>
-                    
-                    <div class="photo-showcase-3d">
-                        <div class="photo-frame-glow">
-                            <div class="photo-inner">
-                                <img th:src="@{${chapters[0].imagePath}}" src="/images/her/photo1.jpg" alt="Our First Memory" class="story-photo">
-                                <div class="photo-overlay-sparkle"></div>
-                            </div>
-                            <div class="photo-pin"><i class="fa-solid fa-gem"></i></div>
-                        </div>
-                    </div>
+<!-- ═══════════════════════════════════════════════════════════
+     COUNTER / STATS BAR
+     ═══════════════════════════════════════════════════════════ -->
+<section class="stats-bar" id="statsBar">
+    <div class="stat-item">
+        <div class="stat-number" data-count="365">0</div>
+        <div class="stat-label">Days of Love</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+        <div class="stat-number" data-count="1000">0</div>
+        <div class="stat-label">Memories Made</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+        <div class="stat-number" data-count="1">0</div>
+        <div class="stat-label">Person I Choose</div>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+        <div class="stat-number" data-count="999">∞</div>
+        <div class="stat-label">Reasons I Love You</div>
+    </div>
+</section>
 
-                    <div class="story-content">
-                        <h2 class="story-title" th:text="${chapters[0].title}">The First Moment</h2>
-                        <p class="story-text" th:text="${chapters[0].description}">
-                            The day our paths crossed, my whole universe shifted into color. Every laugh, every glance with you felt like destiny.
-                        </p>
-                        <div class="quote-pill">
-                            <i class="fa-solid fa-quote-left"></i> "You turned my ordinary world into pure poetry." <i class="fa-solid fa-quote-right"></i>
-                        </div>
-                    </div>
+<!-- ═══════════════════════════════════════════════════════════
+     STORY TIMELINE (SCROLL-BASED)
+     ═══════════════════════════════════════════════════════════ -->
+<section class="timeline-section" id="timelineSection">
+    <div class="section-header reveal-up">
+        <div class="section-tag"><i class="fa-solid fa-book-heart"></i> Our Story</div>
+        <h2 class="section-title">A Journey Through Time</h2>
+        <div class="section-divider"><span>♥</span></div>
+    </div>
 
-                    <div class="card-action-bar">
-                        <button class="btn-romantic-action next-step-btn" data-target="2">
-                            <span class="btn-text" th:text="${chapters[0].buttonText}">Turn The Page 💕</span>
-                            <span class="btn-glow-effect"></span>
-                            <i class="fa-solid fa-arrow-right-long btn-icon"></i>
-                        </button>
+    <div class="timeline-spine"></div>
+
+    <!-- Chapter 1 -->
+    <div class="timeline-entry reveal-left" id="chapter-1">
+        <div class="timeline-node">
+            <div class="node-ring"></div>
+            <div class="node-core"><i class="fa-solid fa-compass"></i></div>
+        </div>
+        <div class="timeline-card">
+            <div class="card-inner">
+                <div class="card-media">
+                    <div class="media-frame">
+                        <img th:src="@{${chapters[0].imagePath}}" src="/images/her/photo1.jpeg"
+                             alt="Chapter 1" class="chapter-photo" loading="lazy">
+                        <div class="media-shimmer"></div>
+                        <div class="media-badge">Chapter I</div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Card 2: Your Radiant Smile -->
-            <div class="story-card" id="card-2" data-step="2">
-                <div class="card-glass-panel">
-                    <div class="chapter-tag">
-                        <i class="fa-regular fa-sun"></i> Chapter II &bull; <span th:text="${chapters[1].tag}">The smile I fell in love with...</span>
+                <div class="card-body">
+                    <div class="chapter-eyebrow" th:text="${chapters[0].tag}">Where our story began...</div>
+                    <h3 class="chapter-title" th:text="${chapters[0].title}">The First Moment</h3>
+                    <p class="chapter-text" th:text="${chapters[0].description}">
+                        The day our paths crossed, my whole universe shifted into color.
+                    </p>
+                    <div class="quote-block">
+                        <div class="quote-marks">"</div>
+                        <p>You turned my ordinary world into pure poetry.</p>
                     </div>
-                    
-                    <div class="photo-showcase-3d">
-                        <div class="photo-frame-glow">
-                            <div class="photo-inner">
-                                <img th:src="@{${chapters[1].imagePath}}" src="/images/her/photo2.jpg" alt="Your Radiant Smile" class="story-photo">
-                                <div class="photo-overlay-sparkle"></div>
-                            </div>
-                            <div class="photo-pin"><i class="fa-solid fa-sun"></i></div>
-                        </div>
-                    </div>
-
-                    <div class="story-content">
-                        <h2 class="story-title" th:text="${chapters[1].title}">Your Enchanting Smile</h2>
-                        <p class="story-text" th:text="${chapters[1].description}">
-                            You have this gentle magic that lights up even my darkest days. Just one smile from you makes all worries disappear.
-                        </p>
-                        <div class="quote-pill">
-                            <i class="fa-solid fa-quote-left"></i> "In your eyes, I found home; in your smile, I found peace." <i class="fa-solid fa-quote-right"></i>
-                        </div>
-                    </div>
-
-                    <div class="card-action-bar">
-                        <button class="btn-romantic-action next-step-btn" data-target="3">
-                            <span class="btn-text" th:text="${chapters[1].buttonText}">Unlock A Secret Thought 🌸</span>
-                            <span class="btn-glow-effect"></span>
-                            <i class="fa-solid fa-sparkles btn-icon"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 3: Precious Memories -->
-            <div class="story-card" id="card-3" data-step="3">
-                <div class="card-glass-panel">
-                    <div class="chapter-tag">
-                        <i class="fa-regular fa-heart"></i> Chapter III &bull; <span th:text="${chapters[2].tag}">Forever etched in my heart...</span>
-                    </div>
-                    
-                    <div class="photo-showcase-3d">
-                        <div class="photo-frame-glow">
-                            <div class="photo-inner">
-                                <img th:src="@{${chapters[2].imagePath}}" src="/images/her/photo3.jpg" alt="Our Sweetest Memories" class="story-photo">
-                                <div class="photo-overlay-sparkle"></div>
-                            </div>
-                            <div class="photo-pin"><i class="fa-solid fa-heart"></i></div>
-                        </div>
-                    </div>
-
-                    <div class="story-content">
-                        <h2 class="story-title" th:text="${chapters[2].title}">Our Sweetest Memories</h2>
-                        <p class="story-text" th:text="${chapters[2].description}">
-                            Every adventure, every quiet moment, every whispered secret — with you, even ordinary days become unforgettable adventures.
-                        </p>
-                        
-                        <!-- Love Reasons Carousel / Badges -->
-                        <div class="love-chips">
-                            <span class="love-chip"><i class="fa-solid fa-wand-magic-sparkles"></i> Your gentle kindness</span>
-                            <span class="love-chip"><i class="fa-solid fa-mug-hot"></i> How you make me laugh</span>
-                            <span class="love-chip"><i class="fa-solid fa-infinity"></i> The way you understand me</span>
-                        </div>
-                    </div>
-
-                    <div class="card-action-bar">
-                        <button class="btn-romantic-action next-step-btn special-pulse" data-target="4">
-                            <span class="btn-text" th:text="${chapters[2].buttonText}">One Last Question... 💖</span>
-                            <span class="btn-glow-effect"></span>
-                            <i class="fa-solid fa-crown btn-icon"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 4: The Grand Proposal (The Climax) -->
-            <div class="story-card" id="card-4" data-step="4">
-                <div class="card-glass-panel grand-proposal-panel">
-                    
-                    <div class="ring-3d-emblem">
-                        <div class="ring-halo"></div>
-                        <div class="ring-sparkle-center">💍</div>
-                    </div>
-
-                    <div class="chapter-tag golden-tag">
-                        <i class="fa-solid fa-crown"></i> The Ultimate Question &bull; Forever &amp; Always
-                    </div>
-                    
-                    <div class="photo-showcase-3d proposal-hero-frame">
-                        <div class="photo-frame-glow golden-border">
-                            <div class="photo-inner">
-                                <img th:src="@{${chapters[3].imagePath}}" src="/images/her/photo4.jpg" alt="My Forever Love" class="story-photo">
-                                <div class="photo-overlay-sparkle"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="story-content">
-                        <h1 class="proposal-headline">
-                            <span class="sub-greeting" th:text="'Dearest ' + ${herName} + ','">Dearest Sweetheart,</span>
-                            <span class="main-question">Will You Be Mine Forever?</span>
-                        </h1>
-                        <p class="story-text proposal-subtext" th:text="${chapters[3].description}">
-                            You are my today, my tomorrow, and my forever. There is nobody else in this universe I'd rather build a lifetime of dreams with.
-                        </p>
-                    </div>
-
-                    <!-- Proposal Decision Arena -->
-                    <div class="proposal-buttons-arena">
-                        <button class="btn-proposal-yes" id="btnYes">
-                            <i class="fa-solid fa-ring"></i>
-                            <span>YES! A Thousand Times YES! ❤️</span>
-                            <div class="btn-sparkle-ring"></div>
-                        </button>
-
-                        <button class="btn-proposal-no" id="btnNo">
-                            <span>No 😜</span>
-                        </button>
-                    </div>
-
-                    <div class="no-feedback-toast" id="noToast"></div>
-                </div>
-            </div>
-
-        </section>
-
-    </main>
-
-    <!-- Grand Celebration Love Letter Modal -->
-    <div class="celebration-modal" id="celebrationModal">
-        <div class="modal-backdrop"></div>
-        <div class="modal-envelope-container">
-            <div class="letter-parchment">
-                <div class="letter-seal"><i class="fa-solid fa-heart"></i></div>
-                <h2 class="letter-heading" th:text="'My Promise to You, ' + ${herName}">My Promise to You</h2>
-                <div class="letter-body">
-                    <p>From this day forward, I promise to hold your hand through every season, to celebrate your happiest triumphs, to comfort you in every storm, and to love you more with every sunrise.</p>
-                    <p>You are my best friend, my greatest adventure, and my eternal home. Thank you for saying YES to us.</p>
-                </div>
-                <div class="letter-footer">
-                    <div class="signature" th:text="'With All My Heart &amp; Soul,'">With All My Heart,</div>
-                    <div class="author-name" th:text="${yourName}">Forever Yours</div>
-                    <div class="date-badge" id="currentDate">Forever &bull; Always</div>
-                </div>
-                <div class="letter-actions">
-                    <button class="btn-replay-petals" id="btnShowerPetals">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Shower More Petals 🌸
-                    </button>
-                    <button class="btn-close-modal" id="btnCloseModal">
-                        <i class="fa-solid fa-heart-circle-check"></i> Hold This Memory Forever
+                    <button class="btn-chapter-next neon-btn" data-next="chapter-2">
+                        <span th:text="${chapters[0].buttonText}">Turn The Page 💕</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <div class="btn-neon-glow"></div>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Floating Interactive Hearts & Sparkle FX Container -->
-    <div id="touch-fx-container"></div>
+    <!-- Chapter 2 -->
+    <div class="timeline-entry reveal-right locked" id="chapter-2">
+        <div class="timeline-node">
+            <div class="node-ring"></div>
+            <div class="node-core"><i class="fa-regular fa-sun"></i></div>
+        </div>
+        <div class="timeline-card">
+            <div class="card-inner">
+                <div class="card-media">
+                    <div class="media-frame">
+                        <img th:src="@{${chapters[1].imagePath}}" src="/images/her/photo2.jpeg"
+                             alt="Chapter 2" class="chapter-photo" loading="lazy">
+                        <div class="media-shimmer"></div>
+                        <div class="media-badge">Chapter II</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chapter-eyebrow" th:text="${chapters[1].tag}">The smile I fell in love with...</div>
+                    <h3 class="chapter-title" th:text="${chapters[1].title}">Your Enchanting Smile</h3>
+                    <p class="chapter-text" th:text="${chapters[1].description}">
+                        You have this gentle magic that lights up even my darkest days.
+                    </p>
+                    <div class="quote-block">
+                        <div class="quote-marks">"</div>
+                        <p>In your eyes, I found home; in your smile, I found peace.</p>
+                    </div>
+                    <button class="btn-chapter-next neon-btn" data-next="chapter-3">
+                        <span th:text="${chapters[1].buttonText}">Unlock A Secret Thought 🌸</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                        <div class="btn-neon-glow"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <!-- Scripts -->
-    <script th:src="@{/js/three-petals.js}" src="/js/three-petals.js"></script>
-    <script th:src="@{/js/script.js}" src="/js/script.js"></script>
+    <!-- Chapter 3 -->
+    <div class="timeline-entry reveal-left locked" id="chapter-3">
+        <div class="timeline-node">
+            <div class="node-ring"></div>
+            <div class="node-core"><i class="fa-regular fa-heart"></i></div>
+        </div>
+        <div class="timeline-card">
+            <div class="card-inner">
+                <div class="card-media">
+                    <div class="media-frame">
+                        <img th:src="@{${chapters[2].imagePath}}" src="/images/her/photo3.jpeg"
+                             alt="Chapter 3" class="chapter-photo" loading="lazy">
+                        <div class="media-shimmer"></div>
+                        <div class="media-badge">Chapter III</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chapter-eyebrow" th:text="${chapters[2].tag}">Forever etched in my heart...</div>
+                    <h3 class="chapter-title" th:text="${chapters[2].title}">Our Sweetest Memories</h3>
+                    <p class="chapter-text" th:text="${chapters[2].description}">
+                        Every adventure, every quiet moment, every whispered secret.
+                    </p>
+
+                    <!-- Reasons I love you - animated chips -->
+                    <div class="reasons-grid">
+                        <div class="reason-chip">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>Your gentle kindness</span>
+                        </div>
+                        <div class="reason-chip">
+                            <i class="fa-solid fa-face-laugh-beam"></i>
+                            <span>How you make me laugh</span>
+                        </div>
+                        <div class="reason-chip">
+                            <i class="fa-solid fa-brain"></i>
+                            <span>The way you understand me</span>
+                        </div>
+                        <div class="reason-chip">
+                            <i class="fa-solid fa-star"></i>
+                            <span>Everything about you</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-chapter-next neon-btn special-glow" data-next="proposal-section">
+                        <span th:text="${chapters[2].buttonText}">One Last Question... 💖</span>
+                        <i class="fa-solid fa-crown"></i>
+                        <div class="btn-neon-glow"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     THE GRAND PROPOSAL SECTION
+     ═══════════════════════════════════════════════════════════ -->
+<section class="proposal-section" id="proposal-section">
+    <!-- Animated background particles handled by JS -->
+    <div class="proposal-bg-rings">
+        <div class="bg-ring r1"></div>
+        <div class="bg-ring r2"></div>
+        <div class="bg-ring r3"></div>
+    </div>
+
+    <div class="proposal-container reveal-scale">
+
+        <!-- Animated Ring Box -->
+        <div class="ring-box-scene" id="ringBoxScene">
+            <div class="ring-box" id="ringBox">
+                <div class="box-lid" id="boxLid">
+                    <div class="lid-top"></div>
+                    <div class="lid-front"></div>
+                </div>
+                <div class="box-base">
+                    <div class="box-interior">
+                        <div class="ring-inside">💍</div>
+                        <div class="ring-glow-inside"></div>
+                    </div>
+                </div>
+                <div class="box-shine"></div>
+            </div>
+        </div>
+
+        <!-- Proposal photo -->
+        <div class="proposal-photo-wrap">
+            <div class="proposal-photo-frame">
+                <img th:src="@{${chapters[3].imagePath}}" src="/images/her/photo4.jpeg"
+                     alt="My Forever Love" class="proposal-photo" loading="lazy">
+                <div class="photo-sparkle-overlay"></div>
+                <div class="photo-frame-border"></div>
+            </div>
+            <div class="photo-caption">
+                <i class="fa-solid fa-heart"></i>
+                <span th:text="'My Forever, ' + ${herName}">My Forever</span>
+            </div>
+        </div>
+
+        <!-- Proposal text -->
+        <div class="proposal-text-block">
+            <div class="proposal-eyebrow">
+                <i class="fa-solid fa-crown"></i> The Moment of Truth &bull; Forever &amp; Always
+            </div>
+            <h1 class="proposal-main-heading">
+                <span class="greeting-script" th:text="'Dearest ' + ${herName} + ','">Dearest Love,</span>
+                <span class="proposal-question" id="proposalQuestion">Will You Be <em>Mine</em> Forever?</span>
+            </h1>
+            <p class="proposal-body-text" th:text="${chapters[3].description}">
+                You are my today, my tomorrow, and my forever.
+            </p>
+
+            <!-- Floating love words -->
+            <div class="love-words-ticker" id="loveTicker">
+                <span class="tick-word">devoted</span>
+                <span class="tick-sep">•</span>
+                <span class="tick-word">sincere</span>
+                <span class="tick-sep">•</span>
+                <span class="tick-word">infinite</span>
+                <span class="tick-sep">•</span>
+                <span class="tick-word">true</span>
+                <span class="tick-sep">•</span>
+                <span class="tick-word">forever</span>
+                <span class="tick-sep">•</span>
+                <span class="tick-word">yours</span>
+                <span class="tick-sep">•</span>
+            </div>
+        </div>
+
+        <!-- Decision Buttons -->
+        <div class="decision-arena" id="decisionArena">
+            <button class="btn-yes" id="btnYes">
+                <div class="yes-ring-pulse"></div>
+                <i class="fa-solid fa-ring"></i>
+                <span>YES! A Thousand Times YES! ❤️</span>
+                <div class="yes-shimmer"></div>
+            </button>
+
+            <div class="no-wrapper" id="noWrapper">
+                <button class="btn-no" id="btnNo">
+                    <span>No 😜</span>
+                </button>
+            </div>
+
+            <div class="no-toast" id="noToast"></div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CELEBRATION MODAL — LOVE LETTER
+     ═══════════════════════════════════════════════════════════ -->
+<div class="celebration-modal" id="celebrationModal">
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="modal-body">
+        <!-- Envelope animation layers -->
+        <div class="envelope-reveal">
+            <div class="env-flap"></div>
+            <div class="env-body-anim"></div>
+        </div>
+
+        <div class="letter-paper">
+            <!-- Wax seal -->
+            <div class="wax-seal">
+                <div class="seal-inner">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+                <div class="seal-ring"></div>
+            </div>
+
+            <div class="letter-content">
+                <h2 class="letter-title" th:text="'My Promise to You, ' + ${herName}">My Promise to You</h2>
+
+                <div class="letter-divider">
+                    <span>~ with all my heart ~</span>
+                </div>
+
+                <div class="letter-body-text">
+                    <p>From this day forward, I promise to hold your hand through every season — to celebrate your happiest triumphs, to comfort you in every storm, and to love you more with every sunrise.</p>
+                    <p>You are my best friend, my greatest adventure, and my eternal home. Thank you for saying <strong>YES</strong> to us.</p>
+                </div>
+
+                <div class="letter-signature-block">
+                    <div class="sig-label">With all my heart &amp; soul,</div>
+                    <div class="sig-name" th:text="${yourName}">Forever Yours</div>
+                    <div class="sig-date" id="sigDate">Forever • Always</div>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="letter-actions">
+                <button class="btn-petals" id="btnShowerPetals">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    Shower Petals Again 🌸
+                </button>
+                <button class="btn-close-letter" id="btnCloseModal">
+                    <i class="fa-solid fa-heart-circle-check"></i>
+                    Hold This Memory Forever
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Touch FX Layer -->
+<div id="fx-layer"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════════════════ -->
+<script th:src="@{/js/three-petals.js}" src="/js/three-petals.js"></script>
+<script th:src="@{/js/script.js}" src="/js/script.js"></script>
 </body>
 </html>
